@@ -1,0 +1,79 @@
+doctype 5
+html
+  head
+    meta lang='utf-8'
+    /link rel='stylesheet' href='css/news-style.css'
+    link rel='stylesheet' href='semantic-ui/css/semantic.min.css'
+    link rel='stylesheet' href='css/font-awesome.min.css'
+    link rel='stylesheet' href='css/style.css'
+  body
+    .ui.inverted.page.grid.masthead.segment
+      .column
+        .inverted.secondary.pointing.ui.menu
+          .header.item
+            | 校园搜索
+          .right.menu
+            .ui.top.right.pointing.mobile.dropdown.link.item
+              a href='/report' Doc
+            .ui.top.right.pointing.mobile.dropdown.link.item
+              a href='/map' Map
+            .ui.top.right.pointing.mobile.dropdown.link.item
+              a href='/search' Search
+            .ui.top.right.pointing.mobile.dropdown.link.item
+              a href='/' Home
+        form.form.segment.main-form
+          .ui.toggle.checkbox
+            input#fuzzy type='checkbox' name='fuzzy' checked=fuzzy
+            label for='fuzzy-checkbox' 模糊
+          .inline.field.ui.left.icon.action.input style='margin-left:1em;'
+            i.icon.search
+            input type='text' name='q' value=q
+          button.ui.blue.submit.button Go
+
+    .ui.page.grid.overview.segment
+      .column.pagination-wrap
+        - if pages > 1
+          .ui.pagination.menu
+            - fu = fuzzy ? "&fuzzy=on" : ""
+            - if page > 0
+              a.icon.item href="/search?q=#{CGI.escape q}&page=#{page-1}#{fu}"
+                i.left.icon.arrow
+            - pages.times do |p|
+              a.item class=(p == page ? 'active' : '') href="/search?q=#{CGI.escape q}&page=#{p}#{fu}" = p
+            - if page < pages-1
+              a.icon.item href="/search?q=#{CGI.escape q}&page=#{page+1}#{fu}"
+                i.right.icon.arrow
+    .ui.page.grid.overview.segment
+      .sixteen.wide.column
+        .ui
+          - result.each do |r|
+            .ui.feed.segment
+              .event
+                .label
+                  - if r[:filetype] == 'html'
+                    img src='img/html.png' width=32 height=32
+                  - if r[:filetype] == 'pdf'
+                    img src='img/pdf.png' width=32 height=32
+                  - if r[:filetype] == 'doc'
+                    img src='img/doc.png' width=32 height=32
+                .content
+                    .summary
+                      a.title href="http://#{r[:uri]}" target='_blank'
+                        = r[:title]
+                    .extra.text
+                      p
+                        = r[:content][0...r[:pos]].force_encoding 'utf-8'
+                        span.red= r[:content][r[:pos]...r[:pos]+r[:len]].force_encoding 'utf-8'
+                        = r[:content][r[:pos]+r[:len]..-1].force_encoding 'utf-8'
+                      a.uri href="http://#{r[:uri]}" target='_blank' = r[:uri]
+                      - if r[:ed]
+                        .ed
+                          | 差异：
+                          = r[:ed]
+                      - else
+                        .score
+                          | 分值：
+                          = r[:score]
+    script src='js/jquery/jquery.min.js'
+    script src='semantic-ui/javascript/semantic.min.js'
+    script src='js/search.js'

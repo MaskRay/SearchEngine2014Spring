@@ -1,0 +1,108 @@
+doctype 5
+html
+  head
+    meta charset='utf-8'
+    meta name='author' content='MaskRay'
+    title 搜索引擎项目展示
+    link rel='stylesheet' href='css/style.css'
+    link rel='stylesheet' href='css/tomorrow-night.css'
+  body
+    #jmpress
+      article
+        #title.step
+          h1 搜索引擎项目展示
+
+        .step
+          h2 项目实现
+          ul
+            li 爬虫
+            li 文本提取
+            li 精确查询
+            li 模糊查询
+            li 摘要生成
+
+        .step
+          h2 精确查询
+          ul
+            li 对文档分词
+            li 创建若干词到(文档,词频)的倒排索引
+            li 对查询分词
+            li 使用多路合并算法求出包含所有关键词的文档
+            li 改进的多路合并：MergeSkip算法
+
+        .step
+          h3 内容排序
+          ul
+            li BM25
+            li PageRank
+
+        .step
+          h2 模糊查询
+          ul
+            li 近似串查询，度量方式：Levenshtein edit distance
+            li 在文档中找到某子串和查询的编辑距离最小
+            li Seller's algorithm
+
+        .step
+          h2 结果呈现
+          ul
+            li 避免CGI
+            li 后端C++监听TCP端口，提供查询服务
+            li Web server: Ruby Sinatra
+            li 收到查询请求后使用TCP socket向后端请求
+
+        .step
+          h3 摘要
+          ul
+            li 模糊查询：Seller算法给出了文档哪一部分和查询最相似
+            li 精确查询
+            li 转化为一种minimum window问题
+            li 尺取法
+
+        .step
+          h2 测试
+          ul
+            li: a href='http://server4:4567/result?fuzzy=on&q=%E8%B6%85%E7%BA%A7%E7%AE%97%E6%9C%BA' 超级算机
+
+        .step.middle
+          h2 謝謝
+
+    script src='//127.0.0.1:35729/livereload.js'
+    script src='js/jquery-1.8.3.min.js'
+    script src='js/jmpress.js'
+    script src='js/highlight.pack.js'
+    coffee:
+      # .line
+      $('.line').html '&crarr;'
+
+      # jmpress
+      $steps = $('.step')
+      for i in [1...$steps.length] by 1
+        $u = $steps.eq(i-1)
+        $v = $steps.eq(i)
+        unless $v.attr('data-x')?
+          $v.attr 'data-x', +$u.attr('data-x') + (if $v.attr('data-y')? then 0 else 1300)
+        unless $v.attr('data-y')?
+          $v.attr 'data-y', $u.attr('data-y')
+          unless $v.attr('data-rotate')?
+            $v.attr 'data-rotate', Math.floor(Math.random*360)
+      $('li, p, pre, .code').attr 'data-jmpress', 'fade'
+      $('#jmpress').jmpress()
+
+      # duration bar
+      duration_bar = $('<div/>').css('background-color': 'cyan', width: '0', height: '5px', left: 0, bottom: 0, position: 'fixed').appendTo $('body')
+      start = Date.now()
+      full = 15*60*1000
+      setInterval ->
+        duration = Date.now()-start
+        w = $(window).width()
+        colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
+        i = Math.floor duration/full
+        if i < 7
+          duration_bar.css 'background-color': colors[i], width: duration%full/full*w
+        else
+          duration_bar.css 'background-color': 'white', width: w
+      , 2000
+
+      # highlighting
+      $('pre > code').each (_, e) -> hljs.highlightBlock(e)

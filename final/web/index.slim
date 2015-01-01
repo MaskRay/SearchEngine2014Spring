@@ -1,0 +1,98 @@
+html
+  head
+    meta lang='utf-8'
+    link rel='stylesheet' href='css/font-awesome.min.css'
+    link rel='stylesheet' href='semantic-ui/css/semantic.min.css'
+    link rel='stylesheet' href='css/style.css'
+  body.index
+    .wrap
+      .ui.inverted.page.grid.masthead.segment
+        .column
+          .inverted.secondary.pointing.ui.menu
+            .header.item
+              | 校园搜索
+            .right.menu
+              .ui.top.right.pointing.mobile.dropdown.link.item
+                a href='/report' Doc
+              .ui.top.right.pointing.mobile.dropdown.link.item
+                a href='/map' Map
+              .ui.top.right.pointing.mobile.dropdown.link.item
+                a href='/search' Search
+              .ui.top.right.pointing.mobile.dropdown.link.item
+                a href='/' Home
+          img.ui.medium.image src='img/cat.png'
+          .ui.transition.information
+            h1.ui.inverted.header
+              | 校园搜索
+            form action='search'
+              .ui.left.icon.action.input
+                i.icon.search
+                input#query name='q' type='text' placeholder='计算机系'
+              button.ui.blue.submit.button Go
+      .ui.page.grid.overview.segment
+        .ui.two.wide.column
+        .twelve.wide.column
+          .ui.four.column.center.aligned.stackable.divided.grid
+            .column
+              .ui.icon.header
+                i.circular.icon.magnet
+                | Exact search
+              p
+                | Homebrew search engine (without framework)
+              p
+                a.ui.teal.right.labeled.icon.button href='/report#精确查询'
+                  | Learn
+                  i.right.long.arrow.icon
+            .column
+              .ui.icon.header
+                i.circular.icon.magic
+                | Similarity search
+              p
+                | MergeSkip + Seller's algorithm
+              p
+                a.ui.teal.right.labeled.icon.button href='/report#模糊查询'
+                  | Learn
+                  i.right.long.arrow.icon
+            .column
+              .ui.icon.header
+                i.circular.icon.empty.star
+                | Improved Ko-Aluru SA construction algorithm + enhanced suffix array
+              p
+                | Construct suffix array in linear time + Linear search time
+              p
+                a.ui.teal.right.labeled.icon.button href='/report#ka-aluru-suffix-array-construction-algorithm'
+                  | Learn
+                  i.right.long.arrow.icon
+            .column
+              .ui.icon.header
+                i.circular.icon.map.marker
+                | Priority R-tree
+              p
+                | A worst-case asymptotically optimal alternative to the spatial tree R-tree
+              p
+                a.ui.teal.right.labeled.icon.button href='/report#priority-r-tree'
+                  | Learn
+                  i.right.long.arrow.icon
+      .footer-push
+    footer.ui.inverted.transparent.page.grid.segment.footer
+      .ten.wide.column
+        .ui.two.column.stackable.grid
+          .column
+            addr
+              | 宋方睿
+              br
+              | 2011011269
+              br
+              | i@maskray.me
+          .column
+            addr
+              | 朱定元
+              br
+              | 2011011222
+              br
+              | zhudy11@126.com
+    script src='js/jquery/jquery.min.js'
+    script src='js/jquery.autocomplete.min.js'
+    script src='semantic-ui/javascript/semantic.min.js'
+    script src='http://maps.googleapis.com/maps/api/js?v=3.10&sensor=false'
+    script src='js/app.js'

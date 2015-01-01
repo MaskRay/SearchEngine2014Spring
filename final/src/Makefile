@@ -1,0 +1,1 @@
+main: LDLIBS+=-L. -lICTCLAS50

@@ -1,0 +1,218 @@
+\title{\input{_title.tex}}
+\author{MaskRay}
+\maketitle
+
+\section{输入和数据存储}
+
+用\texttt{getline}读入\texttt{node.map.utf8}文件的每一行，把其中的名字和编号都映射到一个本地编号，
+本地编号是从0开始连续的，从而可以使用\texttt{vector}存储PageRank而无需使用关联数组，可以加快计算。
+
+\texttt{wiki.graph}中边的表示方式和forward star representation很像，因此使用这个方式存储边。
+顶点\texttt{u}的出边表示为\texttt{ends[from[u]...to[u]]}，这样存储边很紧凑，内存使用量小。
+
+\section{算法实现}
+
+\begin{enumerate}
+  \item 初始化\texttt{rank[i] = 1.0/n, i=0...n-1}
+  \item (迭代开始) \texttt{deadend = 1.0/n}，\texttt{rank2 = 0, i=0...n-1}
+  \item \texttt{rank2[v] += rank[u]*(1-residual)/outDegree[u], for (u,v)}
+  %\item 若顶点\texttt{u}出度为0则\texttt{deadend += residual*rank[u]}
+  \item (迭代结束) 把\texttt{rank2}复制到\texttt{rank}
+\end{enumerate}
+
+这个实现考虑到了出度为0的顶点，把它们的未分配出去的PageRank都聚合到\texttt{deadend}上，
+然后再让\texttt{deadend}把PageRank均匀地分配给各个顶点。
+
+\section{构建和运行}
+
+使用C++ 11编写，可以用\texttt{g++ -std=c++11 -O3 main.cc}编译。
+
+\begin{verbatim}
+% ./main -h
+Usage: ./main [OPTIONS] node_map graph
+
+Options:
+ -i, --niter NITER     number of iterations (default: 30)
+ -r, --residual NITER  residual probability (default: 0.85)
+ -s, --scc             strongly-connected components
+ -w, --wcc             weakly-connected components
+\end{verbatim}
+
+程序接受命令行选项指定迭代次数和系数residual probability。
+
+\begin{verbatim}
+% for i in $(seq 4); do echo --$i-- && ./main -i $i /tmp/nmap /tmp/graph; done
+--1--
+b       0.380556
+c       0.380556
+a       0.238889
+--2--
+b       0.367176
+c       0.367176
+a       0.265648
+--3--
+b       0.370967
+c       0.370967
+a       0.258066
+--4--
+b       0.369893
+c       0.369893
+a       0.260215
+
+% ./main -i 50 -r 0.9 /tmp/nmap /tmp/graph
+b       0.371795
+c       0.371795
+a       0.256410
+\end{verbatim}
+
+\texttt{icpc -O3}编译的程序，迭代10次，
+在我的\texttt{Intel(R) Core(TM) i5-3317U CPU @ 1.70GHz}笔记本上用时53.84秒。
+
+\section{样例输入集}
+
+\texttt{node.map.utf8}共3722312行，即有$n=3722312$个顶点。
+\texttt{wiki.graph}有1109153行，其中有7358个重复行，不重复的行有1101795个。
+使用如下命令即可生成不重复的数据集：
+
+\begin{verbatim}
+awk '!a[$0]++' wiki.graph > uniq.wiki.graph
+\end{verbatim}
+
+\subsection{出度分析}
+
+如下命令可以生成出度的frequency histogram：
+
+\begin{minted}{bash}
+awk -F'[:,]' '{out[NF-2]++}END{for(i in out)if(i>0)print i,out[i]}' uniq.wiki.graph | sort -n > out.degree.dat
+\end{minted}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{img/outd.png}
+  \caption{出度分布}
+\end{figure}
+
+对两个轴分别取对数后数据点基本在一条直线上，但出度较小时拟合情况不好。
+
+\begin{verbatim}
+> summary(lm(log(number) ~ log(outdeg), data=a))
+
+Call:
+lm(formula = log(number) ~ log(outdeg), data = a)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-3.8569 -0.3878  0.0841  0.4221  3.1858 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept) 15.26071    0.09438   161.7   <2e-16 ***
+log(outdeg) -2.04316    0.01436  -142.3   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.626 on 1619 degrees of freedom
+Multiple R-squared:  0.926,     Adjusted R-squared:  0.9259 
+F-statistic: 2.025e+04 on 1 and 1619 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\subsection{入度分析}
+
+如下命令可以生成入度的frequency histogram：
+
+\begin{minted}{bash}
+awk -F'[:,]' '{for(i=2;i<=NF;i++)o[$i]++}END{for(i in o)x[o[i]]++;for(i in x)if(i>0)print i"\t"x[i]}' uniq.wiki.graph | sort -n
+\end{minted}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{img/ind.png}
+  \caption{入度分布}
+\end{figure}
+
+\subsection{强连通分量}
+
+使用Tarjan's SCC算法求强连通分量。代码中使用了一个技巧，即把\texttt{lowlink}数组实现为函数的返回值，
+从而可以少使用一个数组。因为使用了递归函数，运行时需要调整栈大小以避免栈溢出导致segmentation fault：
+
+\begin{minted}{bash}
+ulimit -s unlimited
+./main -s node.map.utf8 uniq.wiki.graph
+\end{minted}
+
+程序会打印出各个强连通分量的大小。
+如下命令可以生成强连通分量统计信息，左列为数目，右列为强连通分量大小(顶点数)：
+
+\begin{verbatim}
+% ./main -s node.map.utf8 uniq.wiki.graph | sort -n | uniq -c
+3120467 1
+   3869 2
+    727 3
+    303 4
+    127 5
+     79 6
+     47 7
+     50 8
+     28 9
+     20 10
+     13 11
+      9 12
+     11 13
+      6 14
+      2 15
+      6 16
+      5 17
+      3 18
+      3 19
+      1 20
+      1 21
+      2 22
+      1 24
+      1 26
+      1 28
+      1 29
+      1 43
+      1 49
+      1 56
+      1 59
+      1 67
+      1 105
+      1 156
+      1 586897
+\end{verbatim}
+
+\begin{itemize}
+  \item 最大的强连通分量大小为586897，占总数$586897/3722312=15.7670\%$的页面在这个强连通分量中。
+  \item 有大量大小为1的强连通分量，这部分页面占$3120467 / 3722312=83.8314\%$。
+\end{itemize}
+
+\subsection{弱连通分量}
+
+为了减少空间占用，弱连通分量通过union-find实现，
+并且采用了weighted quick-union的技巧，合并集合时通过集合大小启发式选择父顶点，
+集合大小的信息和表示父顶点的信息合并存储在一个数组元素里，节省了内存。
+Find使用了path halving，
+把查找链上一半的顶点从指向父顶点改为指向祖父顶点。
+使用了这两个技巧仍然能保证某个Ackermann逆函数的时间复杂度，但实现更为简洁，且没有使用递归。
+
+如下命令可以生成弱连通分量统计信息，左列为数目，右列为弱连通分量大小(顶点数)：
+
+\begin{verbatim}
+% ./main -w node.map.utf8 uniq.wiki.graph | sort -n | uniq -c
+   2367 1
+    471 2
+     48 3
+     16 4
+      5 5
+      4 6
+      1 8
+      1 12
+      1 35
+      1 3718691
+\end{verbatim}
+
+\begin{itemize}
+  \item 最大的弱连通分量大小为3718691，$3718691/3722312=99.9027\%$的页面在这个弱连通分量中。
+  \item 弱连通分量比强连通分量少很多。
+\end{itemize}
+

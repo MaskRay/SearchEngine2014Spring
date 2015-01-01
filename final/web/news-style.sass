@@ -1,0 +1,99 @@
+=experimental($prop, $val)
+  -webkit-#{$prop}: $val
+  -moz-#{$prop}: $val
+  -o-#{$prop}: $val
+  -ms-#{$prop}: $val
+  #{$prop}: $val
+
+=box-shadow($v)
+  +experimental(box-shadow, $v)
+
+=border-radius($v)
+  +experimental(border-radius, $v)
+
+=box-sizing($v)
+  +experimental(box-sizing, $v)
+
+html, body
+  height: 100%
+  padding: 0
+  margin: 0
+
+$footer-h: 40px
+
+*
+  +box-sizing(border-box)
+
+.wrap
+  margin: 0 80px (-$footer-h)
+  min-height: 100%
+  padding-top: 30px
+
+footer, .footer-push
+  height: $footer-h
+
+footer
+  text-align: center
+
+.feed.segment
+  background: #f8f2f2
+  +border-radius(10px)
+  padding: 0.8em
+  margin-top: 1.5em
+
+  &:nth-of-type(6n+2)
+    background: #f2f8f2
+
+  &:nth-of-type(6n+3)
+    background: #f2f2f8
+
+  &:nth-of-type(6n+4)
+    background: #f2f8f8
+
+  &:nth-of-type(6n+5)
+    background: #f8f8f2
+
+  &:nth-of-type(6n+6)
+    background: #f8f2f8
+
+  .title
+    line-height: 2
+    display: block
+    font-size: 1.38em
+
+  a
+    $hc: #37b
+    vertical-align: middle
+
+    &:hover
+      color: $hc
+      text-decoration: underline
+
+    &:active
+      color: darken($hc, 20%)
+      text-decoration: underline
+
+    &:not(:visited) i
+      visibility: hidden
+
+    i
+      position: absolute
+      margin-left: -2em
+      &::before
+        vertical-align: middle
+
+  .uri
+    display: block
+    margin-top: 1em
+    color: #666
+
+  .ed
+    margin-top: 5px
+    color: #444
+
+img
+  vertical-align: middle
+  margin-right: 1em
+
+input, button
+  font: inherit

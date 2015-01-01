@@ -1,0 +1,44 @@
+html
+  head
+    meta lang='utf-8'
+    link rel='stylesheet' href='css/font-awesome.min.css'
+    link rel='stylesheet' href='semantic-ui/css/semantic.min.css'
+    link rel='stylesheet' href='css/style.css'
+  body
+    .ui.inverted.page.grid.masthead.segment
+      .column
+        .inverted.secondary.pointing.ui.menu
+          .header.item
+            | 校园搜索
+          .right.menu
+            .ui.top.right.pointing.mobile.dropdown.link.item
+              a href='/report' Doc
+            .ui.top.right.pointing.mobile.dropdown.link.item
+              a href='/map' Map
+            .ui.top.right.pointing.mobile.dropdown.link.item
+              a href='/search' Search
+            .ui.top.right.pointing.mobile.dropdown.link.item
+              a href='/' Home
+        form.form.segment.main-form
+          h1.ui.inverted.header
+            | 位置搜索
+          .ui.left.icon.action.input
+            i.icon.map.marker
+            input#query name='query' type='text' placeholder='主楼'
+          button.ui.blue.submit.button Go
+    .ui.page.grid.overview.segment
+      .twelve.wide.column
+        #map
+          .ui.active.dimmer
+            .ui.loader
+      .four.wide.column
+        .ui.labeled.vertical.fluid.inverted.icon.menu.hidden data-bind='foreach: places'
+          a.item.place data-bind='attr: {"data-title": title, "data-content": content}, click: function(){window.map.clickPlaceItem(this)}'
+            i.icon.map.marker
+            span data-bind='text: name'
+    script src='js/jquery/jquery.min.js'
+    script src='js/jquery.autocomplete.min.js'
+    script src='js/knockout/knockout.js'
+    script src='semantic-ui/javascript/semantic.min.js'
+    script src='http://maps.googleapis.com/maps/api/js?v=3.10&sensor=false'
+    script src='js/app.js'
